@@ -1,4 +1,4 @@
-# Connect Four Realtime
+# Connect Four Game
 
 A modern, real-time multiplayer Connect Four game implementation with a beautiful user interface and seamless multiplayer experience.
 

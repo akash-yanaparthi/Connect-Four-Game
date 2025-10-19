@@ -1,13 +1,8 @@
-// backend/src/routes/players.js
 const express = require('express');
 const router = express.Router();
 const db = require('../models');
 
-/**
- * POST /players/register
- * Body: { username }
- * Creates a player if doesn't exist and returns the player record.
- */
+
 router.post('/register', async (req, res) => {
   try {
     const username = (req.body.username || '').trim();
@@ -25,10 +20,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-/**
- * GET /players/:username
- * Returns player information
- */
+
 router.get('/:username', async (req, res) => {
   try {
     const username = req.params.username;

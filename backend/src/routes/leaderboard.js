@@ -1,13 +1,8 @@
-// backend/src/routes/leaderboard.js
 const express = require('express');
 const router = express.Router();
 const db = require('../models');
 
-/**
- * GET /leaderboard/top
- * Returns top players ordered by wins (descending).
- * Optional query: ?limit=20 (default 50)
- */
+
 router.get('/top', async (req, res) => {
   try {
     const limit = Math.min(200, parseInt(req.query.limit || '50', 10));
@@ -23,10 +18,7 @@ router.get('/top', async (req, res) => {
   }
 });
 
-/**
- * GET /leaderboard/player/:username
- * Return stats for a single player.
- */
+
 router.get('/player/:username', async (req, res) => {
   try {
     const username = req.params.username;
@@ -42,14 +34,9 @@ router.get('/player/:username', async (req, res) => {
   }
 });
 
-/**
- * POST /leaderboard/reset-dev
- * DEV-only: reset all players stats to zero. Useful for testing.
- * IMPORTANT: Keep this route protected or remove in production.
- */
+
 router.post('/reset-dev', async (req, res) => {
   try {
-    // simple safety: require ?confirm=yes
     if (req.query.confirm !== 'yes') {
       return res.status(400).json({ ok: false, message: 'add ?confirm=yes to run reset (dev only)' });
     }

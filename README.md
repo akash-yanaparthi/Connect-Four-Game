@@ -52,13 +52,13 @@ A modern, real-time multiplayer Connect Four game implementation with a beautifu
 
 1. Start the backend server:
    ```bash
-   cd server
+   cd backend
    npm run dev
    ```
 
 2. Start the frontend development server:
    ```bash
-   cd backend
+   cd frontend
    npm run dev
    ```
 

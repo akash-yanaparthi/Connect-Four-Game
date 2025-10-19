@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { io } from 'socket.io-client'
 import axios from 'axios'
 
-const SERVER_URL = 'http://localhost:3000'
+const SERVER_URL = 'http://connect-four-game-production.up.railway.app'
 
 export default function App() {
   const [socket, setSocket] = useState(null)

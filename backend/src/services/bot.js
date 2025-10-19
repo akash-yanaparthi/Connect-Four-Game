@@ -1,5 +1,4 @@
 // backend/src/services/bot.js
-// Board is rows x cols (6 x 7), 0 = empty, 1 = player1, 2 = player2 (bot usually 2).
 const ROWS = 6;
 const COLS = 7;
 
@@ -8,18 +7,16 @@ function cloneBoard(board) {
 }
 
 function applyMoveToBoard(board, col, player) {
-  // returns { success: bool, row: index } or { success:false }
   for (let r = ROWS - 1; r >= 0; r--) {
     if (board[r][col] === 0) {
       board[r][col] = player;
-      return { success: true, row: r };
+      return { success: true, row: r, col };
     }
   }
   return { success: false };
 }
 
 function checkWinOnBoard(board, player) {
-  // check 4 in a row for player on given board (same logic as main checkWin)
   // horizontal
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c <= COLS - 4; c++) {
@@ -76,22 +73,14 @@ function validColumns(board) {
 }
 
 function scoreColumnHeuristic(col) {
-  // prefer center columns: 3, then 2/4, then 1/5, then 0/6
   const center = 3;
   return -Math.abs(center - col);
 }
 
-/**
- * Decide bot move.
- * @param {*} board - rows x cols 2D array
- * @param {*} botPlayer - integer (1 or 2) assigned to bot
- * @param {*} opponentPlayer - integer of opponent
- * @returns integer column index 0..6
- */
 function pickMove(board, botPlayer = 2, opponentPlayer = 1) {
   const cols = validColumns(board);
 
-  // 1) If any move gives immediate win, take it.
+  // 1) immediate win
   for (const c of cols) {
     const sim = cloneBoard(board);
     const res = applyMoveToBoard(sim, c, botPlayer);
@@ -99,7 +88,7 @@ function pickMove(board, botPlayer = 2, opponentPlayer = 1) {
     if (checkWinOnBoard(sim, botPlayer)) return c;
   }
 
-  // 2) If opponent has immediate winning move next, block it.
+  // 2) block opponent
   for (const c of cols) {
     const sim = cloneBoard(board);
     const res = applyMoveToBoard(sim, c, opponentPlayer);
@@ -107,8 +96,7 @@ function pickMove(board, botPlayer = 2, opponentPlayer = 1) {
     if (checkWinOnBoard(sim, opponentPlayer)) return c;
   }
 
-  // 3) Fallback heuristic: prefer center, avoid moves that allow opponent to win immediately next.
-  // Evaluate columns by heuristic score and safety.
+  // 3) fallback heuristic
   let bestCol = null;
   let bestScore = -Infinity;
 
@@ -117,7 +105,6 @@ function pickMove(board, botPlayer = 2, opponentPlayer = 1) {
     const res = applyMoveToBoard(sim, c, botPlayer);
     if (!res.success) continue;
 
-    // check if opponent could win after this move (simulate opponent best response)
     let opponentCanWin = false;
     const oppCols = validColumns(sim);
     for (const oc of oppCols) {
@@ -131,7 +118,7 @@ function pickMove(board, botPlayer = 2, opponentPlayer = 1) {
     }
 
     let score = scoreColumnHeuristic(c);
-    if (opponentCanWin) score -= 10; // penalize unsafe moves
+    if (opponentCanWin) score -= 10;
 
     if (score > bestScore) {
       bestScore = score;
@@ -139,14 +126,10 @@ function pickMove(board, botPlayer = 2, opponentPlayer = 1) {
     }
   }
 
-  // if nothing chosen (shouldn't happen), pick random valid column
   if (bestCol === null) {
-    if (cols.length === 0) return null;
     return cols[Math.floor(Math.random() * cols.length)];
   }
   return bestCol;
 }
 
 module.exports = { pickMove };
-
-

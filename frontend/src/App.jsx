@@ -18,6 +18,7 @@ export default function App() {
   const [leaderboard, setLeaderboard] = useState([])
   const socketRef = useRef(null)
 
+  // Main socket initialization
   useEffect(() => {
     const s = io(SERVER_URL)
     socketRef.current = s
@@ -47,7 +48,7 @@ export default function App() {
       if (payload.result.type === 'win') addMsg('Winner: P' + payload.result.winner)
       else if (payload.result.type === 'draw') addMsg('Draw')
       else if (payload.result.type === 'forfeit') addMsg('Forfeit')
-      fetchLeaderboard()
+      // fetchLeaderboard() is optional now since we get socket update
     })
     s.on('rejoined', (payload) => {
       setGameId(payload.gameId)
@@ -62,10 +63,23 @@ export default function App() {
     s.on('opponentReconnected', (d) => addMsg(d.message))
     s.on('error', (e) => addMsg('error: ' + (e.message || JSON.stringify(e))))
 
-    fetchLeaderboard()
+    fetchLeaderboard() // initial fetch
 
     return () => { s.disconnect() }
   }, [])
+
+  // Listen for automatic leaderboard updates
+  useEffect(() => {
+    if (!socketRef.current) return
+    const s = socketRef.current
+
+    s.on('leaderboardUpdate', (players) => {
+      setLeaderboard(players)
+      addMsg('Leaderboard auto-updated')
+    })
+
+    return () => s.off('leaderboardUpdate')
+  }, [socketRef.current])
 
   function addMsg(m) {
     setMessages(prev => [...prev.slice(-30), `[${new Date().toLocaleTimeString()}] ${m}`])
@@ -79,9 +93,9 @@ export default function App() {
   }
 
   function renderCell(r, c) {
-    const v = board[r][c]
-    const cls = v === 0 ? 'cell' : v === 1 ? 'cell p1' : 'cell p2'
-    return <div key={`c${r}-${c}`} className={cls}></div>
+    const v = board[r][c];
+    const cls = v === 0 ? 'cell' : v === 1 ? 'cell p1 animate-drop' : 'cell p2 animate-drop';
+    return <div key={`c${r}-${c}`} className={cls}></div>;
   }
 
   function columnClick(c) {
@@ -93,6 +107,7 @@ export default function App() {
   async function fetchLeaderboard() {
     try {
       const res = await axios.get(SERVER_URL + '/leaderboard/top?limit=10')
+      console.log('Fetched leaderboard:', res.data.players)
       if (res.data && res.data.players) setLeaderboard(res.data.players)
     } catch (err) { console.error(err) }
   }

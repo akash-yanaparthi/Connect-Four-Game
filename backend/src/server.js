@@ -1,12 +1,14 @@
 // backend/src/server.js
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const db = require('./models');
 const GameManager = require('./services/gameManager');
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // simple health route
